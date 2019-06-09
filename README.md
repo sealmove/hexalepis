@@ -28,3 +28,4 @@
 - [ ] A status bar
 - [ ] A key config system
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)
+- [ ] Color themes
