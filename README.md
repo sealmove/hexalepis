@@ -3,8 +3,13 @@
 
 &nbsp;
 
-#### Key bindings
+#### How to use
+* Clone
+* [Install Nim](https://nim-lang.org/install.html)
+* Compile (`nim c -o:hex main`) 
+* Run `./hex <filename>`
 
+#### Key bindings
 
 | Key | Action |
 |----------------- | -------------------------
