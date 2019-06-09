@@ -4,10 +4,28 @@
 &nbsp;
 
 #### How to use
-* Clone
+* Clone repository
+```
+git clone https://github.com/sealmove/hex.git
+```
 * [Install Nim](https://nim-lang.org/install.html)
-* Compile (`nim c -o:hex main`) 
-* Run `./hex <filename>`
+```
+#Windows:
+Follow link's instructions
+
+#Linux:
+curl https://nim-lang.org/choosenim/init.sh -sSf | sh
+```
+* Compile
+```
+cd hex
+
+nim c -o:hex main
+```
+* Run 
+```
+./hex <filename>
+```
 
 #### Key bindings
 
@@ -27,4 +45,4 @@
 #### Planning to add
 - [ ] A status bar
 - [ ] A key config system
-- [ ] Insert/delete (needs a btree-like data structure for effeciently)
+- [ ] Insert/delete (needs a btree-like data structure for efficiency)
