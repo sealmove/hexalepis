@@ -1,28 +1,3 @@
-const
-  eraseScreenCode* = "\e[2J"
-  showCursorCode* = "\e[?25h"
-  hideCursorCode* = "\e[?25l"
-
-template cursorPosCode*(x, y): string =
-  "\e[" & $(y + 1) & ";" & $(x + 1) & "H"
-
-template cursorXPosCode*(x): string =
-  "\e[" & $(x + 1) & "G"
-
-template cursorForwardCode*(count): string =
-  "\e[" & $count & "C"
-
-template cursorBackwardCode*(count): string =
-  "\e[" & $count & "D"
-
-template cursorHoverHexCode*(): string =
-  cursorPosCode(E.leftMargin + E.scrnColOff, E.upperMargin + E.scrnRowOff)
-
-template cursorHoverAsciiCode*(): string =
-  let colOff = E.scrnColOff div 3
-  cursorPosCode(E.leftMargin + E.scrnCols + E.rightMargin + colOff,
-                E.upperMargin + E.scrnRowOff)
-
 type Attr* = enum
   resetAll
   bold
@@ -66,6 +41,23 @@ type Attr* = enum
   bgLightMagenta
   bgLightCyan
   bgWhite
+
+const
+  eraseScreenCode* = "\e[2J"
+  showCursorCode* = "\e[?25h"
+  hideCursorCode* = "\e[?25l"
+
+template cursorPosCode*(x, y): string =
+  "\e[" & $(y + 1) & ";" & $(x + 1) & "H"
+
+template cursorXPosCode*(x): string =
+  "\e[" & $(x + 1) & "G"
+
+template cursorForwardCode*(count): string =
+  "\e[" & $count & "C"
+
+template cursorBackwardCode*(count): string =
+  "\e[" & $count & "D"
 
 template toBg*(color): Attr = Attr(color.int + 10)
 

@@ -25,6 +25,7 @@
 | tab | change panel |
 
 #### Planning to add
+- [ ] Redo
 - [ ] Mark (color a byte manually)
 - [ ] A status bar
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)
