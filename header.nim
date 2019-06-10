@@ -14,7 +14,8 @@ type
     panel: Panel
     isPending: bool
     pendingChar: int
-    undoStack: Deque[tuple[index: int64, value: byte]]
+    undoStack: Deque[tuple[index: int64, old, new: byte]]
+    redoStack: Deque[tuple[index: int64, old, new: byte]]
     isModified: seq[bool]
   ByteKind = enum
     bkPrintable

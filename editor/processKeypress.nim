@@ -169,14 +169,22 @@ proc save() =
   if bytesWrote != E.fileData.len:
     die("Wrote " & $bytesWrote & "bytes instead of" & $E.fileData.len)
 
-proc undo() =
-  if E.undoStack.len != 0:
-    let oldByte = E.undoStack.popLast()
-    E.fileData[oldByte.index] = oldByte.value
-    E.isModified[oldByte.index] = false
-
 proc replace(newByte: byte) =
-  E.undoStack.addLast((bytePos, E.fileData[bytePos]))
+  E.undoStack.addLast((bytePos, E.fileData[bytePos], newByte))
   E.fileData[bytePos] = newByte
   E.isModified[bytePos] = true
   moveCursor(RIGHT)
+
+proc undo() =
+  if E.undoStack.len != 0:
+    let action = E.undoStack.popLast()
+    E.redoStack.addLast(action)
+    E.fileData[action.index] = action.old
+    E.isModified[action.index] = false
+
+proc redo() =
+  if E.redoStack.len != 0:
+    let action = E.redoStack.popLast()
+    E.undoStack.addLast(action)
+    E.fileData[action.index] = action.new
+    E.isModified[action.index] = true

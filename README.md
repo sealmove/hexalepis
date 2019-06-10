@@ -16,6 +16,7 @@
 | ctrl+q | exit |
 | ctrl+s | save (in-place) |
 | u (or ctrl+z) | undo |
+| ctrl+r | redo |
 | esc | cancel |
 | h, j, k, l (or arrows) | movement |
 | home | go to beginning of line |
@@ -25,7 +26,7 @@
 | tab | change panel |
 
 #### Planning to add
-- [ ] Redo
+- [x] Redo
 - [ ] Mark (color a byte manually)
 - [ ] A status bar
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)

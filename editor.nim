@@ -21,7 +21,8 @@ proc initiate() =
   E.fileColOff = 0
   E.panel = panelHex
   E.isPending = false
-  E.undoStack = initDeque[tuple[index: int64, value: byte]]()
+  E.undoStack = initDeque[tuple[index: int64, old, new: byte]]()
+  E.redoStack = initDeque[tuple[index: int64, old, new: byte]]()
   stdout.write hideCursorCode
 
   # Read file if any
@@ -64,6 +65,7 @@ proc processKeypress() =
         if E.isPending:
           E.isPending = false
           replace(fromHex[byte](E.pendingChar.char & c.char))
+          clear(E.redoStack)
         else:
           E.isPending = true
           E.pendingChar = c
@@ -76,12 +78,15 @@ proc processKeypress() =
     of panelAscii:
       E.isPending = false
       replace(c.byte)
+      clear(E.redoStack)
   of CTRL('q'):
     resetAndQuit()
   of CTRL('s'):
     save()
   of CTRL('z'):
     undo()
+  of CTRL('r'):
+    redo()
   of LEFT_ARROW, DOWN_ARROW, UP_ARROW, RIGHT_ARROW:
     moveCursor(c)
   of PAGE_UP, PAGE_DOWN:
@@ -91,8 +96,12 @@ proc processKeypress() =
   of END:
     E.scrnColOff = E.scrnCols - 1
   of TAB:
-    E.panel = panelAscii
-    E.isPending = false
+    case E.panel:
+    of panelHex:
+      E.panel = panelAscii
+      E.isPending = false
+    of panelAscii:
+      E.panel = panelHex
   of ESC:
     E.isPending = false
   else: discard
