@@ -47,19 +47,19 @@ const
   showCursorCode* = "\e[?25h"
   hideCursorCode* = "\e[?25l"
 
-template cursorPosCode*(x, y): string =
+proc cursorPosCode*(x, y: int): string =
   "\e[" & $(y + 1) & ";" & $(x + 1) & "H"
 
-template cursorXPosCode*(x): string =
+proc cursorXPosCode*(x: int): string =
   "\e[" & $(x + 1) & "G"
 
-template cursorForwardCode*(count): string =
+proc cursorForwardCode*(count: int): string =
   "\e[" & $count & "C"
 
-template cursorBackwardCode*(count): string =
+proc cursorBackwardCode*(count: int): string =
   "\e[" & $count & "D"
 
-template toBg*(color): Attr = Attr(color.int + 10)
+proc toBg*(color: Attr): Attr = Attr(color.int + 10)
 
 proc attrCode*(attrs: varargs[Attr]): string =
   result = "\e["

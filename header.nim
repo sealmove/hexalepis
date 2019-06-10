@@ -34,14 +34,19 @@ converter toByteKind(b: byte): ByteKind =
   of 0x21 .. 0x7e: bkPrintable
   else: bkRest
 
+# Editor
+var
+  E: Editor
+  origTermios: Termios
+
 # Keys
 const
-  ESC*        = '\e'
-  TAB*        = '\t'
-  LEFT*       = 'h'
-  DOWN*       = 'j'
-  UP*         = 'k'
-  RIGHT*      = 'l'
+  ESC*        = '\e'.int
+  TAB*        = '\t'.int
+  LEFT*       = 'h'.int
+  DOWN*       = 'j'.int
+  UP*         = 'k'.int
+  RIGHT*      = 'l'.int
   LEFT_ARROW  = 1000
   DOWN_ARROW  = 1001
   UP_ARROW    = 1002
@@ -53,23 +58,16 @@ const
   PAGE_DOWN*  = 1008
   NULL        = 9999
 
-template CTRL*(k): int = k.int and 0b0001_1111
+proc CTRL*(k: char): int = k.int and 0b0001_1111
 
 # Printing
 
-#[template disableTimeout(code) =
+#[proc disableTimeout(code) =
   E.termios.c_cc[VMIN] = 1.cuchar
   setAttr(addr E.termios)
   code
   E.termios.c_cc[VMIN] = 0.cuchar
   setAttr(addr E.termios) ]#
-
-template toAscii(b: byte): string =
-  case b.toByteKind
-  of bkNull: "0"
-  of bkWhiteSpace: "_"
-  of bkPrintable: $b.char
-  else: "x"
 
 template cursorHoverHexCode*(): string =
   cursorPosCode(E.leftMargin + E.scrnColOff, E.upperMargin + E.scrnRowOff)
@@ -79,13 +77,20 @@ template cursorHoverAsciiCode*(): string =
   cursorPosCode(E.leftMargin + E.scrnCols + E.rightMargin + colOff,
                 E.upperMargin + E.scrnRowOff)
 
-template getBkAndColor(b: byte): tuple[bk: ByteKind, color: Attr] =
+proc getBkAndColor(b: byte): tuple[bk: ByteKind, color: Attr] =
   case b
     of 0x00: (bkNull, fgDarkGray)
     of 0xff: (bkRest, fgDarkGray)
     of 0x09 .. 0x0d, 0x20: (bkWhiteSpace, fgBlue)
     of 0x21 .. 0x7e: (bkPrintable, fgCyan)
     else: (bkRest, fgWhite)
+
+proc toAscii(b: byte): string =
+  case b.toByteKind
+  of bkNull: "0"
+  of bkWhiteSpace: "_"
+  of bkPrintable: $b.char
+  else: "x"
 
 # Termios utilities
 const EAGAIN* = 11.OSErrorCode
@@ -102,11 +107,11 @@ template `+`*(flag: Cflag, inFlags: set[range[0..65535]]) =
     x = x or f.Cflag
   flag = flag or x
 
-template resetAndQuit() =
+proc resetAndQuit() =
   stdout.write(eraseScreenCode & cursorPosCode(0, 0) & showCursorCode)
   quit()
 
-template die*(errorMsg: string) =
+proc die*(errorMsg: string) =
   var sIn, sErr: string
   sIn &= eraseScreenCode
   sIn &= cursorPosCode(0,0)
@@ -127,8 +132,3 @@ proc getAttr*(termios: ptr Termios) {.raises: [IOError].} =
 
 proc setAttr*(termios: ptr Termios) {.raises: [IOError].} =
   if tcSetAttr(0, TCSAFLUSH, termios) == -1: die "tcsetattr"
-
-# Main procedures
-proc editorInitiate()
-proc editorProcessKeypress()
-proc editorDrawRows(s: var string, panel: Panel)
