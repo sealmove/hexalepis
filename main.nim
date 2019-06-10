@@ -1,12 +1,14 @@
 import os, termios, strutils, deques
 from terminal import terminalHeight
 import imports/vt100
-include header, editor
+include header
 
 # Reset to cooked panel on exit
 proc onQuit() {.noconv.} = setAttr(addr origTermios)
 getAttr(addr origTermios)
 addQuitProc(onQuit)
+
+include editor
 
 initiate()
 
