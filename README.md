@@ -6,7 +6,7 @@
 #### How to use
 * Clone
 * [Install Nim](https://nim-lang.org/install.html)
-* Compile (`nim c -o:hex main`) 
+* Compile (`nim c -d:release -o:hex main`) 
 * Run `./hex <filename>`
 
 #### Key bindings
@@ -25,7 +25,12 @@
 | tab | change panel |
 
 #### Planning to add
+- [ ] Mark (color a byte manually)
 - [ ] A status bar
-- [ ] A key config system
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)
-- [ ] Color themes
+- [ ] Color themes (cycle at runtime)
+- [ ] Vertical line separators
+- [ ] Toggle ascii panel
+- [ ] Adjustable number of columns
+- [ ] Adjust number of columns and/or toggle ascii panel if too small to fit
+- [ ] A keybinding configution system
