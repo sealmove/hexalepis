@@ -17,6 +17,7 @@ type
     undoStack: Deque[tuple[index: int64, old, new: byte]]
     redoStack: Deque[tuple[index: int64, old, new: byte]]
     isModified: seq[bool]
+    isMarked: seq[bool]
   ByteKind = enum
     bkPrintable
     bkWhitespace

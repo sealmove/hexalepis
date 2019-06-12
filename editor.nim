@@ -49,6 +49,7 @@ proc initiate() =
   else:
     E.bytesInLastRow = E.scrnCols
   E.isModified = newSeq[bool](E.fileSize)
+  E.isMarked = newSeq[bool](E.fileSize)
 
 proc processKeypress() =
   let bytePos: int64 = E.scrnCols * (E.fileRowOff + E.scrnRowOff) +
@@ -147,27 +148,72 @@ proc drawRows(s: var string, panel: Panel) =
           kind: ByteKind
           color: Attr
         (kind, color) = E.fileData[scrnOff].getBkAndColor
-        var code: string
         let
           isHovering = row == E.scrnRowOff and col == E.scrnColOff
-          hoverAttr = attrCode(fgBlack, color.toBg)
-          overAttr = attrCode(bold, fgWhite, bgRed)
-        if E.isPending and isHovering:
-          s &= overAttr
+          normalColor = attrCode(fgBlack, color)
+          hoverColor = attrCode(fgBlack, color.toBg)
+          modifColor = attrCode(bold, fgWhite, bgRed)
+          modifHoverColor = attrCode(bold, fgWhite, bgLightRed)
+          markedColor = attrCode(fgWhite, bgYellow)
+          markedHoverColor = attrCode(fgWhite, bgLightYellow)
+          markedModifColor = attrCode(fgWhite, bgMagenta)
+          markedModifHoverColor = attrCode(fgWhite, bgLightMagenta)
+        var mask: int
+        if E.isPending:
+          mask = mask and 0b0001
+        if isHovering:
+          mask = mask and 0b0010
+        if E.isMarked[scrnOff]:
+          mask = mask and 0b0100
+        if E.isModified[scrnOff]:
+          mask = mask and 0b1000
+        case mask
+        of 0b0000:
+          s &= normalColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b0010:
+          s &= hoverColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b0011:
+          s &= modifColor
           s &= E.pendingChar.char
           s &= attrCode(resetAll)
-          s &= hoverAttr
+          s &= hoverColor
           s &= E.fileData[scrnOff].toHex.toLower[1]
-          s &= overAttr
-        else:
-          if isHovering:
-            code = hoverAttr
-          elif E.isModified[scrnOff]:
-            code = overAttr
-          else:
-            code = attrCode(color)
-          s &= code
+          s &= modifColor
+        of 0b0100:
+          s &= markedColor
           s &= E.fileData[scrnOff].toHex.toLower
+        of 0b0110:
+          s &= markedHoverColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b0111:
+          s &= modifColor
+          s &= E.pendingChar.char
+          s &= attrCode(resetAll)
+          s &= markedHoverColor
+          s &= E.fileData[scrnOff].toHex.toLower[1]
+          s &= modifColor
+        of 0b1000:
+          s &= modifColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b1010:
+          s &= modifHoverColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b1100:
+          s &= markedModifColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b1110:
+          s &= markedModifHoverColor
+          s &= E.fileData[scrnOff].toHex.toLower
+        of 0b1111:
+          s &= modifColor
+          s &= E.pendingChar.char
+          s &= attrCode(resetAll)
+          s &= markedModifHoverColor
+          s &= E.fileData[scrnOff].toHex.toLower[1]
+          s &= modifColor
+        else: discard
         s &= cursorXPosCode(E.leftMargin + 3 * E.scrnCols + E.rightMargin +
                             col)
         s &= E.fileData[scrnOff].toAscii
