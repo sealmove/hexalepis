@@ -28,7 +28,7 @@
 
 #### Planning to add
 - [x] Redo
-- [ ] Mark (color a byte manually)
+- [x] Mark (color a byte)
 - [ ] A status bar
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)
 - [ ] Color themes (cycle at runtime)
