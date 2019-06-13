@@ -79,13 +79,12 @@ template cursorHoverAsciiCode*(): string =
   cursorPosCode(E.leftMargin + E.scrnCols + E.rightMargin + colOff,
                 E.upperMargin + E.scrnRowOff)
 
-proc getBkAndColor(b: byte): tuple[bk: ByteKind, color: Attr] =
+proc getColor(b: byte): Attr =
   case b
-    of 0x00: (bkNull, fgDarkGray)
-    of 0xff: (bkRest, fgDarkGray)
-    of 0x09 .. 0x0d, 0x20: (bkWhiteSpace, fgBlue)
-    of 0x21 .. 0x7e: (bkPrintable, fgCyan)
-    else: (bkRest, fgWhite)
+    of 0x00, 0xff: fgDarkGray
+    of 0x09 .. 0x0d, 0x20: fgBlue
+    of 0x21 .. 0x7e: fgCyan
+    else: fgWhite
 
 proc toAscii(b: byte): string =
   case b.toByteKind

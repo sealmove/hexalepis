@@ -173,7 +173,6 @@ proc replace(newByte: byte) =
   E.undoStack.addLast((bytePos, E.fileData[bytePos], newByte))
   E.fileData[bytePos] = newByte
   E.isModified[bytePos] = true
-  moveCursor(RIGHT)
 
 proc undo() =
   if E.undoStack.len != 0:
@@ -188,3 +187,6 @@ proc redo() =
     E.undoStack.addLast(action)
     E.fileData[action.index] = action.new
     E.isModified[action.index] = true
+
+proc mark() =
+  E.isMarked[bytePos] = not E.isMarked[bytePos]

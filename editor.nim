@@ -1,3 +1,26 @@
+{.experimental: "caseStmtMacros".}
+import macros
+
+type byteState = enum
+  bsHovering
+  bsModified
+  bsMarked
+
+macro match(n: set): untyped =
+  result = newTree(nnkIfStmt)
+  let selector = n[0]
+  for i in 1 ..< n.len:
+    let it = n[i]
+    case it.kind
+    of nnkElse, nnkElifBranch, nnkElifExpr, nnkElseExpr:
+      result.add it
+    of nnkOfBranch:
+      for j in 0..it.len-2:
+        let cond = newCall("==", selector, it[j])
+        result.add newTree(nnkElifBranch, cond, it[^1])
+    else:
+      error "'match' cannot handle this node", it
+
 proc initiate() =
   # Enable raw panel
   setStdIoUnbuffered()
@@ -67,6 +90,7 @@ proc processKeypress() =
           E.isPending = false
           replace(fromHex[byte](E.pendingChar.char & c.char))
           clear(E.redoStack)
+          moveCursor(RIGHT)
         else:
           E.isPending = true
           E.pendingChar = c
@@ -76,10 +100,14 @@ proc processKeypress() =
         undo()
       elif c == '['.int or c == ']'.int:
         horizontalScroll(c)
+      elif c == 'm':
+        mark()
+        moveCursor(RIGHT)
     of panelAscii:
       E.isPending = false
       replace(c.byte)
       clear(E.redoStack)
+      moveCursor(RIGHT)
   of CTRL('q'):
     resetAndQuit()
   of CTRL('s'):
@@ -143,77 +171,46 @@ proc drawRows(s: var string, panel: Panel) =
       of panelAscii:
         s &= " "
       for col in 0 ..< upTo:
-        let scrnOff = fileOff + col
+        let
+          scrnOff = fileOff + col
+          isHovering = row == E.scrnRowOff and col == E.scrnColOff
         var
           kind: ByteKind
-          color: Attr
-        (kind, color) = E.fileData[scrnOff].getBkAndColor
-        let
-          isHovering = row == E.scrnRowOff and col == E.scrnColOff
-          normalColor = attrCode(fgBlack, color)
-          hoverColor = attrCode(fgBlack, color.toBg)
-          modifColor = attrCode(bold, fgWhite, bgRed)
-          modifHoverColor = attrCode(bold, fgWhite, bgLightRed)
-          markedColor = attrCode(fgWhite, bgYellow)
-          markedHoverColor = attrCode(fgWhite, bgLightYellow)
-          markedModifColor = attrCode(fgWhite, bgMagenta)
-          markedModifHoverColor = attrCode(fgWhite, bgLightMagenta)
-        var mask: int
-        if E.isPending:
-          mask = mask and 0b0001
-        if isHovering:
-          mask = mask and 0b0010
-        if E.isMarked[scrnOff]:
-          mask = mask and 0b0100
-        if E.isModified[scrnOff]:
-          mask = mask and 0b1000
-        case mask
-        of 0b0000:
-          s &= normalColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b0010:
-          s &= hoverColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b0011:
-          s &= modifColor
+          color = E.fileData[scrnOff].getColor
+          state: set[byteState]
+
+        if E.isMarked[scrnOff]:   state.incl(bsMarked)
+        if E.isModified[scrnOff]: state.incl(bsModified)
+        if isHovering:            state.incl(bsHovering)
+
+        case state
+        of {}:
+          s &= attrCode(color)
+        of {bsHovering}:
+          s &= attrCode(fgBlack, color.toBg)
+        of {bsModified}:
+          s &= attrCode(fgBlack, bgRed)
+        of {bsHovering, bsModified}:
+          s &= attrCode(fgBlack, bgMagenta)
+        of {bsMarked}:
+          s &= attrCode(fgBlack, bgDarkGray)
+        of {bsMarked, bsHovering}:
+          s &= attrCode(fgBlack, bgLightGray)
+        of {bsMarked, bsModified}:
+          s &= attrCode(fgBlack, bgBlue)
+        of {bsMarked, bsModified, bsHovering}:
+          s &= attrCode(fgBlack, bgCyan)
+
+        if E.isPending and isHovering:
+          s &= attrCode(bold, fgBlack, bgRed)
           s &= E.pendingChar.char
           s &= attrCode(resetAll)
-          s &= hoverColor
+          s &= attrCode(fgBlack, bgLightGray)
           s &= E.fileData[scrnOff].toHex.toLower[1]
-          s &= modifColor
-        of 0b0100:
-          s &= markedColor
+          s &= attrCode(bold, fgBlack, bgRed)
+        else:
           s &= E.fileData[scrnOff].toHex.toLower
-        of 0b0110:
-          s &= markedHoverColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b0111:
-          s &= modifColor
-          s &= E.pendingChar.char
-          s &= attrCode(resetAll)
-          s &= markedHoverColor
-          s &= E.fileData[scrnOff].toHex.toLower[1]
-          s &= modifColor
-        of 0b1000:
-          s &= modifColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b1010:
-          s &= modifHoverColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b1100:
-          s &= markedModifColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b1110:
-          s &= markedModifHoverColor
-          s &= E.fileData[scrnOff].toHex.toLower
-        of 0b1111:
-          s &= modifColor
-          s &= E.pendingChar.char
-          s &= attrCode(resetAll)
-          s &= markedModifHoverColor
-          s &= E.fileData[scrnOff].toHex.toLower[1]
-          s &= modifColor
-        else: discard
+
         s &= cursorXPosCode(E.leftMargin + 3 * E.scrnCols + E.rightMargin +
                             col)
         s &= E.fileData[scrnOff].toAscii
