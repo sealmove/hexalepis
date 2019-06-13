@@ -24,6 +24,7 @@
 | pageup, pagedown  | vertical scroll |
 | [ ] | horizontal scroll |
 | tab | change panel |
+| m (in hex panel) | mark byte |
 
 #### Planning to add
 - [x] Redo

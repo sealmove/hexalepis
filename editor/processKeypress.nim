@@ -166,6 +166,7 @@ proc save() =
     file = open(E.fileName, fmWrite)
     bytesWrote = writeBytes(file, E.fileData, 0, E.fileData.len)
   close(file)
+  zeroMem(addr E.isModified[0], E.fileSize)
   if bytesWrote != E.fileData.len:
     die("Wrote " & $bytesWrote & "bytes instead of" & $E.fileData.len)
 
