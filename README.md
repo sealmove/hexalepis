@@ -1,7 +1,7 @@
 # hex
 ## Console hex editor. Modern, ergonomic &amp; intuitive!
 
-[![asciicast](https://asciinema.org/a/14.png)](https://asciinema.org/a/14)
+[![asciicast](https://asciinema.org/a/b73DC6eFtwP4Uy0UWlCGJ7dWR.svg)](https://asciinema.org/a/b73DC6eFtwP4Uy0UWlCGJ7dWR)
 
 #### How to use
 * Clone
