@@ -17,13 +17,13 @@ Currently *hex* only runs on linux terminal emulators, but there are plans for m
 * Stability
 * Featurefulness
 
-#### How to use
+### Installation
 * Clone
 * [Install Nim](https://nim-lang.org/install.html)
 * Compile (`nim c -d:release -o:hex main`) 
 * Run `./hex <filename>`
 
-#### Key bindings
+### Key bindings
 
 | Key | Action |
 |----------------- | -------------------------
@@ -41,7 +41,7 @@ Currently *hex* only runs on linux terminal emulators, but there are plans for m
 | tab | change panel |
 | m (in hex panel) | mark byte |
 
-#### Planning to add
+### Planning to add
 - [ ] Mouse support
 - [ ] Status bar
 - [ ] Insert/delete (needs a btree-like data structure for effeciency)
