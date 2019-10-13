@@ -1,7 +1,7 @@
 # hex
 ## Console hex editor. Modern, ergonomic &amp; intuitive!
 
-&nbsp;
+[![asciicast](https://asciinema.org/a/14.png)](https://asciinema.org/a/14)
 
 #### How to use
 * Clone
@@ -27,13 +27,14 @@
 | m (in hex panel) | mark byte |
 
 #### Planning to add
-- [x] Redo
-- [x] Mark (color a byte)
-- [ ] A status bar
+- [ ] Adjustable panel width
+- [ ] Mouse support
+- [ ] Status bar
 - [ ] Insert/delete (needs a btree-like data structure for effeciently)
 - [ ] Color themes (cycle at runtime)
 - [ ] Vertical line separators
 - [ ] Toggle ascii panel
-- [ ] Adjustable number of columns
-- [ ] Adjust number of columns and/or toggle ascii panel if too small to fit
-- [ ] A keybinding configution system
+- [ ] .ksy support ([Kaitai Struct](https://kaitai.io/))
+- [ ] Keybinding configution system
+- [x] Redo
+- [x] Mark (color a byte)
