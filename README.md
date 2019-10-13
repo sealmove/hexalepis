@@ -1,7 +1,21 @@
 # hex
-## Console hex editor. Modern, ergonomic &amp; intuitive!
+## Hex editor made effecient &amp; intuitive
 
-[![asciicast](https://asciinema.org/a/b73DC6eFtwP4Uy0UWlCGJ7dWR.svg)](https://asciinema.org/a/b73DC6eFtwP4Uy0UWlCGJ7dWR)
+### Introduction
+This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a real project.
+
+Currently hex runs on console, but there are plans for making a GUI version with [nimx](https://github.com/yglukhov/nimx)
+
+*Note: Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is sadly just a proof-of-concept project rather than a full-fledged hex editor.*
+
+### [Article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) summary
+Text editors are optimized based on common text operations (per line editing, etc). While editing hex values, a very different set of operations becomes common; thus, hex editors need special data structures and algorithms for achieving comparable effeciency.
+
+### Design goals
+* Effeciency
+* Simplicity
+* Stability
+* Featurefulness
 
 #### How to use
 * Clone
