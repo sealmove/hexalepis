@@ -132,10 +132,13 @@ proc verticalScroll(key: int) =
 proc adjustWidth(key: int) =
   case key
   of '-'.int:
-    if E.scrnCols != 1:
+    if E.scrnCols > 1:
       dec(E.scrnCols)
+      E.userWidth = E.scrnCols
   of '='.int:
-    inc(E.scrnCols)
+    if E.scrnCols < E.widthMaxFit:
+      inc(E.scrnCols)
+      E.userWidth = E.scrnCols
   else: discard
 
 proc horizontalScroll(key: int) =

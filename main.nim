@@ -1,5 +1,5 @@
 import os, termios, strutils, deques
-from terminal import terminalHeight
+from terminal import terminalHeight, terminalWidth
 import imports/vt100
 include header
 
@@ -14,6 +14,14 @@ initiate()
 
 while true:
   E.scrnRows = terminalHeight() - 2
+  E.widthMaxFit =
+    (terminalWidth() - E.leftMargin - E.rightMargin - E.scrnCols) div 3
+  if E.widthMaxFit < E.scrnCols:
+    E.scrnCols = E.widthMaxFit
+  elif E.widthMaxFit > E.userWidth:
+    E.scrnCols = E.userWidth
+  elif E.widthMaxFit > E.scrnCols + 1:
+    E.scrnCols = E.widthMaxFit
   # Render Screen
   var buf: string
   buf &= cursorPosCode(0, 0)

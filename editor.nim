@@ -42,6 +42,7 @@ proc initiate() =
   E.upperMargin = 1
   E.fileRowOff = 0
   E.fileColOff = 0
+  E.userWidth = E.scrnCols
   E.panel = panelHex
   E.isPending = false
   E.undoStack = initDeque[tuple[index: int64, old, new: byte]]()

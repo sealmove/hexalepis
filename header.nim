@@ -11,6 +11,8 @@ type
     fileRowOff: int
     fileColOff: int
     bytesInLastRow: int
+    userWidth: int
+    widthMaxFit: int
     panel: Panel
     isPending: bool
     pendingChar: int
