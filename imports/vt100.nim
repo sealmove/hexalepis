@@ -46,6 +46,7 @@ const
   eraseScreenCode* = "\e[2J"
   showCursorCode* = "\e[?25h"
   hideCursorCode* = "\e[?25l"
+  eraseLineCode* = "\e[K"
 
 proc cursorPosCode*(x, y: int): string =
   "\e[" & $(y + 1) & ";" & $(x + 1) & "H"

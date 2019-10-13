@@ -1,5 +1,5 @@
 {.experimental: "caseStmtMacros".}
-import macros
+import macros, strformat, imports/vt100
 
 type byteState = enum
   bsHovering
@@ -22,7 +22,7 @@ macro match(n: set): untyped =
       error "'match' cannot handle this node", it
 
 proc initiate() =
-  # Enable raw panel
+  # Enable raw mode
   setStdIoUnbuffered()
   E.termios = origTermios
   E.termios.c_iflag - {BRKINT, ICRNL, INPCK, ISTRIP, IXON}
@@ -59,7 +59,7 @@ proc initiate() =
       E.fileData.setLen(E.fileSize)
       let bytesRead = file.readBuffer(addr E.fileData[0], E.fileSize)
       if bytesRead != E.fileSize:
-        die("Read " & $bytesRead & " bytes instead of " & $E.fileSize)
+        die(&"Read {bytesRead} bytes instead of {E.fileSize}")
     except IOError:
       die("")
     finally:
@@ -98,6 +98,8 @@ proc processKeypress() =
         moveCursor(c)
       elif c == 'u'.int:
         undo()
+      elif c == '-'.int or c == '='.int:
+        adjustWidth(c)
       elif c == '['.int or c == ']'.int:
         horizontalScroll(c)
       elif c == 'm':
@@ -144,17 +146,21 @@ proc drawRows(s: var string, panel: Panel) =
   s &= "  "
   if panel == panelHex: s &= "|" else: s &= " "
   s &= attrCode(bold, fgYellow)
-  s &= "0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F"
+  for i in 0 ..< E.scrnCols:
+    s &= i.toHex(2) & " "
+  s &= "\b"
   s &= attrCode(resetAll)
   if panel == panelHex: s &= "|  "
   else: s &= "  |"
   s &= attrCode(bold, fgYellow)
-  s &= "0123456789ABCDEF\e[K"
+  for i in 0 ..< E.scrnCols:
+    s &= i.toHex(1)
+  s &= eraseLineCode
   s &= attrCode(resetAll)
   if panel == panelAscii: s &= "|"
   s &= "\r\n"
   for row in 0 ..< E.scrnRows:
-    s &= "\e[K" # erase line 
+    s &= eraseLineCode
     let fileOff: int64 = E.scrnCols * (E.fileRowOff + row) + E.fileColOff
     if fileOff < E.fileSize:
       let upTo =

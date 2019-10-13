@@ -27,10 +27,10 @@
 | m (in hex panel) | mark byte |
 
 #### Planning to add
-- [ ] Adjustable panel width
+- [ ] Automatic adjustment of panel width to fit in screen
 - [ ] Mouse support
 - [ ] Status bar
-- [ ] Insert/delete (needs a btree-like data structure for effeciently)
+- [ ] Insert/delete (needs a btree-like data structure for effeciency)
 - [ ] Color themes (cycle at runtime)
 - [ ] Vertical line separators
 - [ ] Toggle ascii panel
@@ -38,3 +38,4 @@
 - [ ] Keybinding configution system
 - [x] Redo
 - [x] Mark (color a byte)
+- [x] Adjustable panel width

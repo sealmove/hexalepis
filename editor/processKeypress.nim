@@ -129,6 +129,15 @@ proc verticalScroll(key: int) =
       inc(E.fileRowOff, E.scrnRows)
   else: discard
 
+proc adjustWidth(key: int) =
+  case key
+  of '-'.int:
+    if E.scrnCols != 1:
+      dec(E.scrnCols)
+  of '='.int:
+    inc(E.scrnCols)
+  else: discard
+
 proc horizontalScroll(key: int) =
   proc incBytesInLastRow() =
     if E.bytesInLastRow < 16:
