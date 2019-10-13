@@ -3,13 +3,13 @@
 
 ### Introduction
 This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a real project.
+*Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is sadly just a proof-of-concept project rather than a full-fledged hex editor.*
 
-Currently hex runs on console, but there are plans for making a GUI version with [nimx](https://github.com/yglukhov/nimx)
-
-*Note: Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is sadly just a proof-of-concept project rather than a full-fledged hex editor.*
-
-### [Article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) summary
+#### [Article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) summary
 Text editors are optimized based on common text operations (per line editing, etc). While editing hex values, a very different set of operations becomes common; thus, hex editors need special data structures and algorithms for achieving comparable effeciency.
+
+#### Notes
+* Currently *hex* runs on console, but there are plans for making a GUI version with [nimx](https://github.com/yglukhov/nimx).
 
 ### Design goals
 * Effeciency
