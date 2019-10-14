@@ -3,10 +3,24 @@
 
 ### Introduction
 This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a real project.
-*Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
-#### [Article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) summary
 Text editors are optimized based on common text operations (per line editing, etc). While editing hex values, a very different set of operations becomes common; thus, hex editors need special data structures and algorithms for achieving comparable effeciency.
+
+#### Time effeciency
+| Operation | Complexity |
+|---------- | ---------- |
+| Insertion | log(n) |
+| Deletion | log(n) |
+| Seeking | O(log(n)) |
+| Copy-paste | O(1) |
+| Searching | O(n) |
+| Save | O(n) |
+
+#### Space effeciency
+The engine implements lazy file loading and copy-on-write; thus, memory usage is minimal (proportionally to changes).
+Copy-paste is not an insertion operation! This means pasting the same block in multiple places does not increase memory usage proportionally to the block size. One could view this as a form of compression.
+
+*Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
 ### Status: 5% [#....................]
 This is hex version 1. It only runs on linux terminal emulators and the engine described above is not yet implemented.
@@ -27,7 +41,7 @@ Version 2 will have the engine + a cross-platform GUI made with [nimx](https://g
 ### Key bindings
 
 | Key | Action |
-|----------------- | -------------------------
+|----------------- | ------------------------- |
 | ctrl+q | exit |
 | ctrl+s | save (in-place) |
 | u (or ctrl+z) | undo |
