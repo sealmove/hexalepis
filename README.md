@@ -9,11 +9,11 @@ Text editors are optimized based on common text operations (per line editing, et
 #### Time effeciency
 | Operation | Complexity |
 |---------- | ---------- |
-| Insertion | log(n) |
-| Deletion | log(n) |
-| Seeking | O(log(n)) |
+| Insert | log(n) |
+| Delete | log(n) |
+| Seek | O(log(n)) |
 | Copy-paste | O(1) |
-| Searching | O(n) |
+| Search | O(n) |
 | Save | O(n) |
 
 #### Space effeciency
