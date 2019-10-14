@@ -1,10 +1,10 @@
-# hex
+# Hexalepis
 ## Hex editor made effecient
 
 ### Introduction
 Hex editors need special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*.
 
-This means **hex** also aims for:
+This means **hexalepis** also aims for:
 * Featurefulness
     - Highlighting
     - Various radices
@@ -40,8 +40,8 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 *Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
 ### 5% [#....................]
-This is **hex version 1**. It only runs on linux terminal emulators and the engine described above is not yet implemented.
-**Hex version 2** will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
+This is **Hexalepis version 1**. It only runs on linux terminal emulators and the engine described above is not yet implemented.
+**Hexalepis version 2** will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
 
 ### Design goals
 * Effeciency
@@ -52,8 +52,8 @@ This is **hex version 1**. It only runs on linux terminal emulators and the engi
 ### Installation
 * Clone
 * [Install Nim](https://nim-lang.org/install.html)
-* Compile (`nim c -d:release -o:hex main`) 
-* Run `./hex <filename>`
+* Compile (`nim c -d:release -o:hexalepis main`) 
+* Run `./hexalepis <filename>`
 
 ### Key bindings
 
