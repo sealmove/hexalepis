@@ -88,4 +88,4 @@ This is **hex version 1**. It only runs on linux terminal emulators and the engi
 
 ### Version 2 plans
 - [ ] Implement Simon Tatham's engine
-- [ ] Make a nimx GUI edition
+- [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
