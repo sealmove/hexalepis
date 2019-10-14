@@ -2,7 +2,25 @@
 ## Hex editor made effecient
 
 ### Introduction
-Hex editors needs special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*. This means **hex**, other than effeciency, also aims for featurefulness, stability and support for a wide range of platforms (Linux, MacOS, Windows and browsers). An additional goal is simplicity. 
+Hex editors need special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*.
+
+This means **hex** also aims for:
+* Featurefulness
+    - Highlighting
+    - Various radices
+    - Parameterizable search
+    - Configurable keybindings
+    - [Kaitai Struct](https://kaitai.io/) integration
+    - (...)
+* User interface
+    - Modern
+    - Intuitive
+    - Simple
+* Platform
+    - Linux (both TUI and GUI)
+    - MacOS
+    - Windows
+    - Browsers
 
 ### Time effeciency
 | Operation | Complexity |
