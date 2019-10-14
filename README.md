@@ -1,12 +1,10 @@
 # hex
-## Hex editor made effecient &amp; intuitive
+## Hex editor made effecient
 
 ### Introduction
-This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a real project.
+Hex editors needs special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*. This means **hex**, other than effeciency, also aims for featurefulness, stability and support for a wide range of platforms (Linux, MacOS, Windows and browsers). An additional goal is simplicity. 
 
-Text editors are optimized based on common text operations (per line editing, etc). While editing hex values, a very different set of operations becomes common; thus, hex editors need special data structures and algorithms for achieving comparable effeciency.
-
-#### Time effeciency
+### Time effeciency
 | Operation | Complexity |
 |---------- | ---------- |
 | Replace | O(1) |
@@ -17,15 +15,15 @@ Text editors are optimized based on common text operations (per line editing, et
 | Search | O(n) |
 | Save | O(n) |
 
-#### Space effeciency
+### Space effeciency
 The engine implements lazy file loading and copy-on-write; thus, memory usage is minimal (proportionally to changes).
 Copy-paste is not an insertion operation! This means pasting the same block in multiple places does not increase memory usage proportionally to the block size. One could view this as a form of compression.
 
 *Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
-### Status: 5% [#....................]
-This is hex version 1. It only runs on linux terminal emulators and the engine described above is not yet implemented.
-Version 2 will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
+### 5% [#....................]
+This is **hex version 1**. It only runs on linux terminal emulators and the engine described above is not yet implemented.
+**Hex version 2** will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
 
 ### Design goals
 * Effeciency
