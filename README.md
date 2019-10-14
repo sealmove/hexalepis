@@ -3,13 +3,14 @@
 
 ### Introduction
 This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a real project.
-*Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is sadly just a proof-of-concept project rather than a full-fledged hex editor.*
+*Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
 #### [Article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) summary
 Text editors are optimized based on common text operations (per line editing, etc). While editing hex values, a very different set of operations becomes common; thus, hex editors need special data structures and algorithms for achieving comparable effeciency.
 
-### Platform
-Currently *hex* only runs on linux terminal emulators, but there are plans for making a GUI version with [nimx](https://github.com/yglukhov/nimx).
+### Status: 5% [#....................]
+This is hex version 1. It only runs on linux terminal emulators and the engine described above is not yet implemented.
+Version 2 will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
 
 ### Design goals
 * Effeciency
@@ -41,10 +42,9 @@ Currently *hex* only runs on linux terminal emulators, but there are plans for m
 | tab | change panel |
 | m (in hex panel) | mark byte |
 
-### Planning to add
+### Version 1 plans
 - [ ] Mouse support
 - [ ] Status bar
-- [ ] Insert/delete (needs a btree-like data structure for effeciency)
 - [ ] Color themes (cycle at runtime)
 - [ ] Vertical line separators
 - [ ] Toggle ascii panel
@@ -54,3 +54,7 @@ Currently *hex* only runs on linux terminal emulators, but there are plans for m
 - [x] Mark (color a byte)
 - [x] Adjustable panel width
 - [x] Automatically-adjusting panel width (to fit screen)
+
+### Version 2 plans
+- [ ] Implement Simon Tatham's engine
+- [ ] Make a nimx GUI edition

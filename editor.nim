@@ -105,7 +105,6 @@ proc processKeypress() =
         horizontalScroll(c)
       elif c == 'm':
         mark()
-        moveCursor(RIGHT)
     of panelAscii:
       E.isPending = false
       replace(c.byte)
