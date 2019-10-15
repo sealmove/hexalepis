@@ -6,18 +6,18 @@ Hex editors need special optimizations (different from text editors) which are t
 
 This means **hexalepis** also aims for:
 * Featurefulness
-    - Highlighting
     - Various radices
+    - Highlighting
     - Parameterizable search
-    - Configurable keybindings
     - [Kaitai Struct](https://kaitai.io/) integration
+    - Configurable keybindings
     - (...)
-* User interface
-    - Modern
+* User interface (TUI and GUI)
+    - Responsive
     - Intuitive
-    - Simple
+    - Modern
 * Platform
-    - Linux (both TUI and GUI)
+    - Linux
     - MacOS
     - Windows
     - Browsers
@@ -44,11 +44,11 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 - [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
 - [ ] ([Kaitai Struct](https://kaitai.io/)) support
 
-### TUI plans
+### TUI goals
+- [ ] Toggle ascii panel
 - [ ] Mouse support
 - [ ] Status bar
 - [ ] Color themes (cycle at runtime)
-- [ ] Toggle ascii panel
 - [ ] Keybinding configution system
 - [x] Automatically-adjusting panel to fit console
 
