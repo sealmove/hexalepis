@@ -91,7 +91,6 @@ proc processKeypress() =
           E.isPending = false
           replace(fromHex[byte](E.pendingChar.char & c.char))
           clear(E.redoStack)
-          moveCursor(RIGHT)
         else:
           E.isPending = true
           E.pendingChar = c
