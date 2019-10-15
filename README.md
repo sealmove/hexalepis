@@ -42,7 +42,7 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 ### Main goals
 - [ ] Implement Simon Tatham's engine
 - [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
-- [ ] ([Kaitai Struct](https://kaitai.io/)) support
+- [ ] [Kaitai Struct](https://kaitai.io/) support
 
 ### TUI goals
 - [ ] Toggle ascii panel
