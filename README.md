@@ -39,19 +39,22 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 
 *Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
-### 5% [#....................]
-This is **Hexalepis version 1**. It only runs on linux terminal emulators and the engine described above is not yet implemented.
-**Hexalepis version 2** will have the engine + a cross-platform GUI made with [nimx](https://github.com/yglukhov/nimx).
+### Main goals
+- [ ] Implement Simon Tatham's engine
+- [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
+- [ ] ([Kaitai Struct](https://kaitai.io/)) support
 
-### Design goals
-* Effeciency
-* Simplicity
-* Stability
-* Featurefulness
+### TUI plans
+- [ ] Mouse support
+- [ ] Status bar
+- [ ] Color themes (cycle at runtime)
+- [ ] Toggle ascii panel
+- [ ] Keybinding configution system
+- [x] Automatically-adjusting panel to fit console
 
 ### Installation
-* Clone
 * [Install Nim](https://nim-lang.org/install.html)
+* Clone
 * Compile (`nim c -d:release -o:hexalepis main`) 
 * Run `./hexalepis <filename>`
 
@@ -72,20 +75,3 @@ This is **Hexalepis version 1**. It only runs on linux terminal emulators and th
 | +, = | adjust width |
 | tab | change panel |
 | m (in hex panel) | mark byte |
-
-### Version 1 plans
-- [ ] Mouse support
-- [ ] Status bar
-- [ ] Color themes (cycle at runtime)
-- [ ] Vertical line separators
-- [ ] Toggle ascii panel
-- [ ] .ksy support ([Kaitai Struct](https://kaitai.io/))
-- [ ] Keybinding configution system
-- [x] Redo
-- [x] Mark (color a byte)
-- [x] Adjustable panel width
-- [x] Automatically-adjusting panel width (to fit screen)
-
-### Version 2 plans
-- [ ] Implement Simon Tatham's engine
-- [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
