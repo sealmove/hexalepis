@@ -10,7 +10,7 @@ This means **hexalepis** also aims for:
     - Highlighting
     - Parameterizable search
     - [Kaitai Struct](https://kaitai.io/) integration
-    - Configurable keybindings
+    - Configurable key bindings
     - (...)
 * User interface (TUI and GUI)
     - Responsive
@@ -49,7 +49,7 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 - [ ] Mouse support
 - [ ] Status bar
 - [ ] Color themes (cycle at runtime)
-- [ ] Keybinding configution system
+- [ ] Configurable key bindings
 - [x] Automatically-adjusting panel to fit console
 
 ### Installation
