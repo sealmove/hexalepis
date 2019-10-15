@@ -1,5 +1,5 @@
 # Hexalepis
-## Hex editor made effecient
+## Hex editor made efficient
 
 ### Introduction
 Hex editors need special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*.
@@ -22,7 +22,7 @@ This means **hexalepis** also aims for:
     - Windows
     - Browsers
 
-### Time effeciency
+### Time efficiency
 | Operation | Complexity |
 |---------- | ---------- |
 | Replace | O(1) |
@@ -33,7 +33,7 @@ This means **hexalepis** also aims for:
 | Search | O(n) |
 | Save | O(n) |
 
-### Space effeciency
+### Space efficiency
 The engine implements lazy file loading and copy-on-write; thus, memory usage is minimal (proportionally to changes).
 Copy-paste is not an insertion operation! This means pasting the same block in multiple places does not increase memory usage proportionally to the block size. One could view this as a form of compression.
 

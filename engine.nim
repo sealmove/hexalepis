@@ -7,7 +7,7 @@ const
 type
   Node = ref object
     refCnt: int
-    byteCnt: int
+    byteCnt: int64
     entries: int
     elements: array[M, Element]
     father: Node
@@ -20,11 +20,11 @@ type
   Element = ref object
     case kind: ElementKind
     of ekLiteral: data: tuple[bytes: array[K, byte], length: int]
-    of ekPlaceholder: file: tuple[offset, length: int]
-  Tree* = object
-    root: Node
+    of ekPlaceholder: file: tuple[offset, length: int64]
 
-proc `[]`(n: Node, i: int): byte =
+var myFile = open("myfile", fmReadWriteExisting)
+
+proc find(n: Node, i: int64): tuple[p: ptr Element, offset: int64] =
   var
     i = i
     currElement = 0
@@ -33,27 +33,54 @@ proc `[]`(n: Node, i: int): byte =
     of true:
       for e in 0 ..< n.entries:
         let
-          element = n.elements[e]
-          len = element.data.length
+          element = unsafeAddr(n.elements[e])
+          len = case element.kind
+                of ekLiteral:
+                  element.data.length.int64
+                of ekPlaceholder:
+                  element.file.length
         if i < len:
-          return element.data.bytes[i]
+          return (element, i)
         else:
-          dec(i, len)
+          i = i - len
     of false:
-      let lcount = if n.children[c] == nil: 0
+      let lcount = if n.children[c] == nil: 0'i64
                    else: n.children[c].byteCnt
       if i < lcount:
-        return n.children[c][i]
+        return find(n.children[c], i)
       else:
-        let d = n.elements[currElement].data
-        if i < lcount + d.length:
-          return d.bytes[i - lcount]
+        let
+          e = unsafeAddr(n.elements[currElement])
+          len = case e.kind
+                of ekLiteral:
+                  e.data.length.int64
+                of ekPlaceholder:
+                  e.file.length
+        if i < lcount + len:
+          return (e, i - lcount)
         else:
-          dec(i, lcount + d.length)
+          i = i - lcount - len
           inc(currElement)
 
-#proc `[]`(t: Tree, i: int): byte =
-#  t.root[i]
+proc `[]`(n: Node, i: int64): byte =
+  var (e, o) = find(n, i)
+  case e.kind
+  of ekLiteral:
+    e.data.bytes[o]
+  of ekPlaceholder:
+    myFile.setFilePos(e.file.offset + o)
+    readChar(myFile).byte
+
+proc `[]=`(n: Node, i: int64, v: byte) =
+  var (e, o) = find(n, i)
+  case e.kind
+  of ekLiteral:
+    e.data.bytes[o] = v
+  of ekPlaceholder:
+    discard
+    # Don't wanna touch the file here, should clone()
+    # myFile.setFilePos(e.file.offset + o)
+    # myFile.write(v)
 
 proc add(root: Node, where: int, what: Node) =
   if root.children[where] != nil:
@@ -63,25 +90,28 @@ proc add(root: Node, where: int, what: Node) =
   inc(root.entries)
   var curr = what
   while curr.father != nil:
-    inc(curr.father.byteCnt, curr.byteCnt)
+    curr.father.byteCnt = curr.father.byteCnt + curr.byteCnt
     curr = curr.father
 
-proc elem(t: tuple[bytes: array[K, byte], length: int]): Element =
+proc elemLiteral(t: tuple[bytes: array[K, byte], length: int]): Element =
   Element(kind: ekLiteral, data: t)
+
+proc elemPlaceholder(offset, length: int64): Element =
+  Element(kind: ekPlaceholder, file: (offset, length))
 
 let test = Node(
   isLeaf: false,
   entries: 2,
-  elements: [elem(([12'u8,13,14,0], 3)),elem(([18'u8,19,0,0], 2)),nil,nil]
+  elements: [elemLiteral(([12'u8,13,14,0], 3)),elemLiteral(([18'u8,19,0,0], 2)),nil,nil]
 )
 
 test.add(0, Node(
   byteCnt: 7,
   isLeaf: false,
   entries: 3,
-  elements: [elem(([2'u8,3,4,5], 4)),
-             elem(([7'u8,0,0,0], 1)),
-             elem(([8'u8,9,0,0], 2)),
+  elements: [elemLiteral(([2'u8,3,4,5], 4)),
+             elemLiteral(([7'u8,0,0,0], 1)),
+             elemLiteral(([8'u8,9,0,0], 2)),
              nil]
 ))
 
@@ -89,50 +119,56 @@ test.children[0].add(0, Node(
   byteCnt: 2,
   isLeaf: true,
   entries: 1,
-  elements: [elem(([0'u8,1,0,0], 2)),nil,nil,nil]
+  elements: [elemLiteral(([0'u8,1,0,0], 2)),nil,nil,nil]
 ))
 
 test.children[0].add(1, Node(
   byteCnt: 1,
   isLeaf: true,
   entries: 1,
-  elements: [elem(([6'u8,0,0,0], 1)),nil,nil,nil]
+  elements: [elemLiteral(([6'u8,0,0,0], 1)),nil,nil,nil]
 ))
 
 test.children[0].add(3, Node(
   byteCnt: 2,
   isLeaf: true,
   entries: 2,
-  elements: [elem(([10'u8,0,0,0], 1)), elem(([11'u8,0,0,0], 1)), nil, nil]
+  elements: [elemLiteral(([10'u8,0,0,0], 1)), elemLiteral(([11'u8,0,0,0], 1)), nil, nil]
 ))
 
 test.add(1, Node(
   byteCnt: 3,
   isLeaf: true,
   entries: 1,
-  elements: [elem(([15'u8,16,17,0], 3)),nil,nil,nil]
+  elements: [elemLiteral(([15'u8,16,17,0], 3)),nil,nil,nil]
 ))
 
 test.add(2, Node(
   byteCnt: 8,
   isLeaf: false,
   entries: 2,
-  elements: [elem(([20'u8,21,22,23], 4)),elem(([28'u8,29,30,31], 4)),nil,nil]
+  elements: [elemPlaceholder(0, getFileSize(myFile)),elemLiteral(([28'u8,29,30,31], 4)),nil,nil]
 ))
 
 test.children[2].add(1, Node(
   byteCnt: 3,
   isLeaf: false,
   entries: 2,
-  elements: [elem(([25'u8,26,0,0], 2)),elem(([27'u8,0,0,0], 1)),nil,nil]
+  elements: [elemLiteral(([25'u8,26,0,0], 2)),elemLiteral(([27'u8,0,0,0], 1)),nil,nil]
 ))
 
 test.children[2].children[1].add(0, Node(
   byteCnt: 1,
   isLeaf: true,
   entries: 1,
-  elements: [elem(([24'u8,0,0,0], 1)),nil,nil,nil]
+  elements: [elemLiteral(([24'u8,0,0,0], 1)),nil,nil,nil]
 ))
 
-for i in 0 .. 31:
+
+test[5] = 55'u8
+test[7] = 77'u8
+
+for i in 0 .. 32:
   echo test[i]
+
+close(myFile)
