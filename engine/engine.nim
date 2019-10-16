@@ -21,6 +21,8 @@ type
     case kind: ElementKind
     of ekLiteral: data: tuple[bytes: array[K, byte], length: int]
     of ekPlaceholder: file: tuple[offset, length: int64]
+  Tree* = object
+    root: Node
 
 var myFile = open("myfile", fmReadWriteExisting)
 
@@ -82,6 +84,9 @@ proc `[]=`(n: Node, i: int64, v: byte) =
     # myFile.setFilePos(e.file.offset + o)
     # myFile.write(v)
 
+proc `[]`(t: Tree, i: int64): byte =
+  t.root[i]
+
 proc add(root: Node, where: int, what: Node) =
   if root.children[where] != nil:
     quit("Tried to add Node to non-nil link")
@@ -98,6 +103,9 @@ proc elemLiteral(t: tuple[bytes: array[K, byte], length: int]): Element =
 
 proc elemPlaceholder(offset, length: int64): Element =
   Element(kind: ekPlaceholder, file: (offset, length))
+
+proc openFile(f: File): Tree =
+  
 
 let test = Node(
   isLeaf: false,
