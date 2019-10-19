@@ -1,6 +1,6 @@
-import tui, termios
+import tui, termios, os
 
-# Reset to cooked panel on exit
+# Reset to cooked mode on exit
 var origTerm: Termios
 getAttr(addr origTerm)
 proc onQuit() {.noconv.} = setAttr(addr origTerm)
@@ -19,8 +19,18 @@ setAttr(addr term)
 
 # Run TUI
 var t = new(Tui)
-t.setFileFromProcArgs()
+var file: File
+if paramCount() >= 1:
+  try:
+    file = open(paramStr(1))
+    t.setFileFromProcArgs(file)
+  except IOError:
+    die("")
+
 t.initialize()
 while true:
   t.render()
   t.processKeypress(readKey())
+
+if file != nil:
+  close(file)

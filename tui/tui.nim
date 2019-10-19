@@ -1,4 +1,4 @@
-import vt100, macros, os, termios, deques, strutils, strformat
+import vt100, macros, os, termios, deques, strutils, strformat, ../engine/engine
 from terminal import terminalHeight, terminalWidth
 
 type
@@ -6,22 +6,17 @@ type
     scrnRows, scrnCols: int
     scrnRowOff, scrnColOff: int
     leftMargin, rightMargin, upperMargin: int
-    fileName: string
-    fileData: seq[byte]
-    fileSize: int64
-    fileRows: int
-    fileRowOff: int
-    fileColOff: int
+    data: Tree
+    size: int64
+    rows: int
+    rowOff: int
+    colOff: int
     bytesInLastRow: int
     userWidth: int
     widthMaxFit: int
     panel: Panel
     isPending: bool
     pendingChar: int
-    undoStack: Deque[tuple[index: int64, old, new: byte]]
-    redoStack: Deque[tuple[index: int64, old, new: byte]]
-    isModified: seq[bool]
-    isMarked: seq[bool]
   ByteKind = enum
     bkPrintable
     bkWhitespace
@@ -87,8 +82,8 @@ template cursorHoverAsciiCode(t: Tui): string =
   cursorPosCode(t.leftMargin + t.scrnCols + t.rightMargin + colOff,
                 t.upperMargin + t.scrnRowOff)
 
-template bytePos(t): int64 = t.scrnCols * (t.fileRowOff + t.scrnRowOff) +
-  t.fileColOff + t.scrnColOff
+template bytePos(t): int64 = t.scrnCols * (t.rowOff + t.scrnRowOff) +
+  t.colOff + t.scrnColOff
 
 proc CTRL(k: char): int = k.int and 0b0001_1111
 
@@ -121,7 +116,7 @@ template `+`*(flag: Cflag, inFlags: set[range[0..65535]]) =
     x = x or f.Cflag
   flag = flag or x
 
-proc die(errorMsg: string) =
+proc die*(errorMsg: string) =
   var sIn, sErr: string
   sIn &= eraseScreenCode
   sIn &= cursorPosCode(0,0)
@@ -149,36 +144,36 @@ proc moveCursor(t: Tui, key: int) =
     elif t.scrnRowOff != 0:
       t.scrnColOff = t.scrnCols - 1
       dec t.scrnRowOff
-    elif t.fileRowOff != 0:
+    elif t.rowOff != 0:
       t.scrnColOff = t.scrnCols - 1
-      dec t.fileRowOff
+      dec t.rowOff
   of DOWN, DOWN_ARROW:
     # We are before pre-last row
-    if t.fileRowOff + t.scrnRowOff < t.fileRows - 2:
+    if t.rowOff + t.scrnRowOff < t.rows - 2:
       if t.scrnRowOff != t.scrnRows - 1:
         inc t.scrnRowOff
       else:
-        inc t.fileRowOff
+        inc t.rowOff
     # We are at pre-last row
-    elif t.fileRowOff + t.scrnRowOff == t.fileRows - 2:
+    elif t.rowOff + t.scrnRowOff == t.rows - 2:
       if t.bytesInLastRow > t.scrnColOff:
         if t.scrnRowOff == t.scrnRows - 1:
-          inc t.fileRowOff
+          inc t.rowOff
         else:
           inc t.scrnRowOff
   of UP, UP_ARROW:
     if t.scrnRowOff != 0:
       dec t.scrnRowOff
-    elif t.fileRowOff != 0:
-      dec t.fileRowOff
+    elif t.rowOff != 0:
+      dec t.rowOff
   of RIGHT, RIGHT_ARROW:
     # We are before last row
-    if t.fileRowOff + t.scrnRowOff < t.fileRows - 1:
+    if t.rowOff + t.scrnRowOff < t.rows - 1:
       if t.scrnColOff != t.scrnCols - 1:
         inc(t.scrnColOff, 1)
       else:
         if t.scrnRowOff == t.scrnRows - 1:
-          inc t.fileRowOff
+          inc t.rowOff
         else:
           inc t.scrnRowOff
         t.scrnColOff = 0
@@ -192,20 +187,20 @@ proc verticalScroll(t: Tui, key: int) =
   case key:
   of PAGE_UP:
     # We are first page
-    if t.fileRowOff == 0:
+    if t.rowOff == 0:
       t.scrnRowOff = 0
     # Go to first page
-    elif t.fileRowOff < t.scrnRows:
-      if t.scrnRows - t.scrnRowOff < t.fileRowOff:
+    elif t.rowOff < t.scrnRows:
+      if t.scrnRows - t.scrnRowOff < t.rowOff:
         t.scrnRowOff = t.scrnRows - 1
       else:
-        inc(t.scrnRowOff, t.fileRowOff)
-      t.fileRowOff = 0
+        inc(t.scrnRowOff, t.rowOff)
+      t.rowOff = 0
     # Scroll full page
     else:
-      dec(t.fileRowOff, t.scrnRows)
+      dec(t.rowOff, t.scrnRows)
   of PAGE_DOWN:
-    let remainingRows = t.fileRows - t.fileRowOff
+    let remainingRows = t.rows - t.rowOff
     # We are at last page
     if remainingRows <= t.scrnRows:
       if t.bytesInLastRow > t.scrnColOff:
@@ -219,9 +214,9 @@ proc verticalScroll(t: Tui, key: int) =
         dec(t.scrnRowOff, rowsInLastPage)
       else:
         t.scrnRowOff = 0
-      inc(t.fileRowOff, rowsInLastPage)
+      inc(t.rowOff, rowsInLastPage)
     else:
-      inc(t.fileRowOff, t.scrnRows)
+      inc(t.rowOff, t.scrnRows)
   else: discard
 
 proc adjustWidth(t: Tui, key: int) =
@@ -245,53 +240,37 @@ proc horizontalScroll(t: Tui, key: int) =
 
   case key
   of '['.int:
-    if t.fileColOff != 0:
-      dec(t.fileColOff)
+    if t.colOff != 0:
+      dec(t.colOff)
       incBytesInLastRow()
-    elif t.fileRowOff != 0:
-      dec(t.fileRowOff)
-      t.fileColOff = 15
+    elif t.rowOff != 0:
+      dec(t.rowOff)
+      t.colOff = 15
       incBytesInLastRow()
   of ']'.int:
-    if t.fileColOff != 15:
-      inc(t.fileColOff)
+    if t.colOff != 15:
+      inc(t.colOff)
       decBytesInLastRow()
-    elif t.fileRowOff != t.fileRows:
-      inc(t.fileRowOff)
-      t.fileColOff = 0
+    elif t.rowOff != t.rows:
+      inc(t.rowOff)
+      t.colOff = 0
       decBytesInLastRow()
   else: discard
 
 proc save(t: Tui) =
-  let
-    file = open(t.fileName, fmWrite)
-    bytesWrote = writeBytes(file, t.fileData, 0, t.fileData.len)
-  close(file)
-  zeroMem(addr t.isModified[0], t.fileSize)
-  if bytesWrote != t.fileData.len:
-    die("Wrote " & $bytesWrote & "bytes instead of" & $t.fileData.len)
+  discard
 
 proc replace(t: Tui, newByte: byte) =
-  t.undoStack.addLast((t.bytePos, t.fileData[t.bytePos], newByte))
-  t.fileData[t.bytePos] = newByte
-  t.isModified[t.bytePos] = true
+  t.data[t.bytePos] = newByte
 
 proc undo(t: Tui) =
-  if t.undoStack.len != 0:
-    let action = t.undoStack.popLast()
-    t.redoStack.addLast(action)
-    t.fileData[action.index] = action.old
-    t.isModified[action.index] = false
+  discard
 
 proc redo(t: Tui) =
-  if t.redoStack.len != 0:
-    let action = t.redoStack.popLast()
-    t.undoStack.addLast(action)
-    t.fileData[action.index] = action.new
-    t.isModified[action.index] = true
+  discard
 
 proc mark(t: Tui) =
-  t.isMarked[t.bytePos] = not t.isMarked[t.bytePos]
+  discard
 
 proc getAttr*(term: ptr Termios) {.raises: [IOError].} =
   if tcGetAttr(0, term) == -1: die "tcgetattr"
@@ -299,23 +278,9 @@ proc getAttr*(term: ptr Termios) {.raises: [IOError].} =
 proc setAttr*(term: ptr Termios) {.raises: [IOError].} =
   if tcSetAttr(0, TCSAFLUSH, term) == -1: die "tcsetattr"
 
-proc setFileFromProcArgs*(t: Tui) =
-  if paramCount() >= 1:
-    t.fileName = paramStr(1)
-    var file: File
-    try:
-      file = open(paramStr(1))
-      t.fileSize = getFileSize(file)
-      #t.fileData = openFile(file)
-      t.fileData = newSeqOfCap[byte](t.fileSize)
-      t.fileData.setLen(t.fileSize)
-      let bytesRead = file.readBuffer(addr t.fileData[0], t.fileSize)
-      if bytesRead != t.fileSize:
-        die(&"Read {bytesRead} bytes instead of {t.fileSize}")
-    except IOError:
-      die("")
-    finally:
-      close(file)
+proc setFileFromProcArgs*(t: Tui, f: File) =
+  t.data = openFile(f)
+  t.size = getFileSize(f)
 
 proc initialize*(t: Tui) =
   # Initialize Tui
@@ -325,22 +290,18 @@ proc initialize*(t: Tui) =
   t.leftMargin = 11
   t.rightMargin = 2
   t.upperMargin = 1
-  t.fileRowOff = 0
-  t.fileColOff = 0
+  t.rowOff = 0
+  t.colOff = 0
   t.userWidth = t.scrnCols
   t.panel = panelHex
   t.isPending = false
-  t.undoStack = initDeque[tuple[index: int64, old, new: byte]]()
-  t.redoStack = initDeque[tuple[index: int64, old, new: byte]]()
   stdout.write hideCursorCode
-  t.fileRows = t.fileData.len div t.scrnCols
-  t.bytesInLastRow = t.fileData.len mod t.scrnCols
+  t.rows = t.data.len.int div t.scrnCols
+  t.bytesInLastRow = t.data.len.int mod t.scrnCols
   if t.bytesInLastRow != 0:
-    inc(t.fileRows)
+    inc(t.rows)
   else:
     t.bytesInLastRow = t.scrnCols
-  t.isModified = newSeq[bool](t.fileSize)
-  t.isMarked = newSeq[bool](t.fileSize)
 
 # Buffered proc for drawing screen
 proc render*(t: Tui) =
@@ -356,7 +317,7 @@ proc render*(t: Tui) =
   var s: string
   s &= cursorPosCode(0, 0)
   s &= attrCode(fgYellow, bold, underline)
-  let hoverOff = t.scrnCols * (t.fileRowOff + t.scrnRowOff) + t.fileColOff
+  let hoverOff = t.scrnCols * (t.rowOff + t.scrnRowOff) + t.colOff
   s &= toHex(hoverOff + t.scrnColOff, 8)
   s &= attrCode(resetAll)
   s &= "  "
@@ -377,15 +338,15 @@ proc render*(t: Tui) =
   s &= "\r\n"
   for row in 0 ..< t.scrnRows:
     s &= eraseLineCode
-    let fileOff: int64 = t.scrnCols * (t.fileRowOff + row) + t.fileColOff
-    if fileOff < t.fileSize:
+    let off: int64 = t.scrnCols * (t.rowOff + row) + t.colOff
+    if off < t.size:
       let upTo =
-        if fileOff > t.fileSize - t.scrnCols:
+        if off > t.size - t.scrnCols:
           t.bytesInLastRow
         else:
           t.scrnCols
       s &= attrCode(bold)
-      s &= fileOff.toHex(8).toLower & "  "
+      s &= off.toHex(8).toLower & "  "
       s &= attrCode(resetAll)
       case t.panel
       of panelHex:
@@ -394,16 +355,15 @@ proc render*(t: Tui) =
         s &= " "
       for col in 0 ..< upTo:
         let
-          scrnOff = fileOff + col
+          scrnOff = off + col
           isHovering = row == t.scrnRowOff and col == t.scrnColOff
         var
           kind: ByteKind
-          color = t.fileData[scrnOff].getColor
+          color = t.data[scrnOff].getColor
           state: set[ByteState]
 
-        if t.isMarked[scrnOff]:   state.incl(bsMarked)
-        if t.isModified[scrnOff]: state.incl(bsModified)
-        if isHovering:            state.incl(bsHovering)
+        if isHovering:
+          state.incl(bsHovering)
 
         case state
         of {}:
@@ -428,14 +388,14 @@ proc render*(t: Tui) =
           s &= t.pendingChar.char
           s &= attrCode(resetAll)
           s &= attrCode(fgBlack, bgLightGray)
-          s &= t.fileData[scrnOff].toHex.toLower[1]
+          s &= t.data[scrnOff].toHex.toLower[1]
           s &= attrCode(bold, fgBlack, bgRed)
         else:
-          s &= t.fileData[scrnOff].toHex.toLower
+          s &= t.data[scrnOff].toHex.toLower
 
         s &= cursorXPosCode(t.leftMargin + 3 * t.scrnCols + t.rightMargin +
                             col)
-        s &= t.fileData[scrnOff].toAscii
+        s &= t.data[scrnOff].toAscii
         s &= attrCode(resetAll)
         s &= cursorXPosCode(t.leftMargin + 3 * (col + 1))
       if t.panel == panelHex:
@@ -511,7 +471,6 @@ proc processKeypress*(t: Tui, c: int) =
         if t.isPending:
           t.isPending = false
           t.replace(fromHex[byte](t.pendingChar.char & c.char))
-          clear(t.redoStack)
         else:
           t.isPending = true
           t.pendingChar = c
@@ -528,7 +487,6 @@ proc processKeypress*(t: Tui, c: int) =
     of panelAscii:
       t.isPending = false
       t.replace(c.byte)
-      clear(t.redoStack)
       t.moveCursor(RIGHT)
   of CTRL('q'):
     resetAndQuit()
