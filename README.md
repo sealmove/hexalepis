@@ -39,6 +39,15 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 
 *Simon Tatham created [tweak](https://www.chiark.greenend.org.uk/~sgtatham/tweak/) which is more of a proof-of-concept rather than a full-fledged hex editor.*
 
+### Engine implementation progress
+- [ ] Replace
+- [ ] Copy-paste
+- [ ] Insert
+- [ ] Delete
+- [x] Seek
+- [ ] Search
+- [ ] Save
+
 ### Main goals
 - [ ] Implement Simon Tatham's engine
 - [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
@@ -75,3 +84,5 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 | +, = | adjust width |
 | tab | change panel |
 | m (in hex panel) | mark byte |
+
+**Note:** Since the new engine was integrated into the TUI, some of the key bindings above will not work because the functionality is not implemented yet.
