@@ -1,7 +1,7 @@
 const
-  M = 4 # 512
+  M = 512
   Mhalf = M div 2
-  K = 4 # 2048
+  K = 2048
   Khalf = K div 2
 
 type
@@ -103,9 +103,6 @@ proc len*(t: Tree): int64 =
   t.root.byteCnt
 
 proc openFile*(f: File): owned Tree =
-  Tree(root: Node(
-    byteCnt: f.getFileSize(),
-    isLeaf: true,
-    entries: 1,
-    elements: [ioblock(f, 0),nil,nil,nil]
-  ))
+  var node = Node(byteCnt: f.getFileSize(), isLeaf: true, entries: 1)
+  node.elements[0] = ioblock(f, 0)
+  Tree(root: node)
