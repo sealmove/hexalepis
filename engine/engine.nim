@@ -201,37 +201,37 @@ when isMainModule:
     e15 = newLitElem(26,27,28)
     e16 = newLitElem(29,30,31)
 
-n00.add(e00)
-n01.add(e01)
-n02.add(e02)
-n03.add(e03, e04)
-n04.add(e05, e07)
-n05.add(e06)
-n06.add(e08)
-n07.add(e09)
-n08.add(e10, e11, e16)
-n09.add(e12, e14)
-n10.add(e13)
-n11.add(e15)
+  n00.add(e00)
+  n01.add(e01)
+  n02.add(e02)
+  n03.add(e03, e04)
+  n04.add(e05, e07)
+  n05.add(e06)
+  n06.add(e08)
+  n07.add(e09)
+  n08.add(e10, e11, e16)
+  n09.add(e12, e14)
+  n10.add(e13)
+  n11.add(e15)
 
-n02.add(n03, 1)
-n01.add(n00, 0)
-n01.add(n02, 1)
-n04.add(n01, 0)
-n04.add(n05, 1)
-n04.add(n08, 2)
-n06.add(n07, 1)
-n08.add(n06, 0)
-n09.add(n10, 1)
-n11.add(n09, 0)
-n08.add(n11, 2)
+  n02.add(n03, 1)
+  n01.add(n00, 0)
+  n01.add(n02, 1)
+  n04.add(n01, 0)
+  n04.add(n05, 1)
+  n04.add(n08, 2)
+  n06.add(n07, 1)
+  n08.add(n06, 0)
+  n09.add(n10, 1)
+  n11.add(n09, 0)
+  n08.add(n11, 2)
 
-echo "--- get() ---"
-for i in 0 .. 31:
-  echo n04[i]
+  echo "--- get() ---"
+  for i in 0 .. 31:
+    echo n04[i]
 
-echo "\n"
+  echo "\n"
 
-echo "--- path() ---"
-for brk in path(n04, 15'i64):
-  echo brk
+  echo "--- path() ---"
+  for brk in path(n04, 15'i64):
+    echo brk
