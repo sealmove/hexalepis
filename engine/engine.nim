@@ -1,3 +1,5 @@
+import strformat
+
 const
   M = 512
   Mhalf = M div 2
@@ -28,49 +30,39 @@ type
   Tree* = object
     root: Node
 
-#[
 proc newRoot(): Node =
   Node(refCnt: 1, byteCnt: 0'i64, entries: 0)
 
-proc split(t: Tree, at: int64): tuple[l, r: Tree] =
-  let
-    lroot = newRoot()
-    rroot = newRoot()
-]#
+proc add(n: Node, elements: varargs[Element]) =
+  for i, e in elements:
+    n.elements[n.entries + i] = e
+    n.byteCnt = n.byteCnt + e.length
+    var curr = n.father
+    while curr != nil:
+      curr.byteCnt = curr.byteCnt + e.length
+      curr = curr.father
+  inc(n.entries, elements.len)
 
-iterator path(n: Node, i: int64): int =
-  var
-    n = n
-    i = i
-    isOver: bool
-  while not isOver:
-    var currElement = 0
-    case n.isLeaf
-    of true:
-      for e in 0 ..< n.entries:
-        if i < n.elements[e].length:
-          isOver = true
-          yield e
-        else:
-          i = i - n.elements[e].length
-    of false:
-      for c in 0 .. n.entries:
-        let lcount = if n.children[c] == nil: 0'i64
-                     else: n.children[c].byteCnt
-        # descent
-        if i < lcount:
-          n = n.children[c]
-          yield c
-          break
-        # found it
-        elif i < lcount + n.elements[currElement].length:
-          isOver = true
-          yield currElement
-          break
-        # progress
-        else:
-          i = i - lcount - n.elements[currElement].length
-          inc(currElement)
+proc add(n: Node, e: Element, where: int) =
+  n.elements[where] = e
+  n.byteCnt = n.byteCnt + e.length
+  var curr = n.father
+  while curr != nil:
+    curr.byteCnt = curr.byteCnt + e.length
+    curr = curr.father
+  inc(n.entries)
+
+proc add(root: Node, what: Node, where: int) =
+  if root.children[where] != nil:
+    quit("Tried to add Node to non-nil link")
+  if what == nil:
+    return
+  what.father = root
+  root.children[where] = what
+  var curr = what
+  while curr.father != nil:
+    curr.father.byteCnt =  curr.father.byteCnt + curr.byteCnt
+    curr = curr.father
 
 proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
   var
@@ -93,13 +85,16 @@ proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
         if i < lcount:
           n = n.children[c]
           break
-        # found it
-        elif i < lcount + n.elements[currElement].length:
-          return (n.elements[currElement], i - lcount)
-        # progress
         else:
-          i = i - lcount - n.elements[currElement].length
-          inc(currElement)
+          if n.elements[currElement] == nil:
+            raise newException(IndexError, "index out of bounce")
+          # found it
+          elif i < lcount + n.elements[currElement].length:
+            return (n.elements[currElement], i - lcount)
+          # progress
+          else:
+            i = i - lcount - n.elements[currElement].length
+            inc(currElement)
 
 proc `[]`(n: Node, i: int64): byte =
   var (e, o) = get(n, i)
@@ -136,6 +131,95 @@ proc openFile*(f: File): Tree =
   node.elements[0] = ioblock(f, 0)
   Tree(root: node)
 
+iterator path(t: Tree, i: int64): tuple[p: int, o: int64] =
+  var
+    n = t.root
+    i = i
+    isOver: bool
+  while not isOver:
+    var currElement = 0
+    case n.isLeaf
+    of true:
+      for e in 0 ..< n.entries:
+        if i < n.elements[e].length:
+          isOver = true
+          yield (e, i)
+        else:
+          i = i - n.elements[e].length
+    of false:
+      for c in 0 .. n.entries:
+        let lcount = if n.children[c] == nil: 0'i64
+                      else: n.children[c].byteCnt
+        # descent
+        if i < lcount:
+          n = n.children[c]
+          yield (c, i - lcount)
+          break
+        else:
+          if n.elements[currElement] == nil:
+            raise newException(IndexError, "index out of bounce")
+          # found it
+          elif i < lcount + n.elements[currElement].length:
+            isOver = true
+            yield (currElement, i - lcount)
+            break
+          # progress
+          else:
+            i = i - lcount - n.elements[currElement].length
+            inc(currElement)
+
+proc newLitElem(a: array[K, byte]; s, f: int64): Element =
+  result = Element(kind: ekLiteral)
+  for i in 0 .. f - s:
+    result.bytes[i] = a[s + i]
+  result.length = f - s + 1
+
+proc split(t: Tree, at: int64): tuple[l, r: Tree] =
+  var
+    n = t.root
+    levels: seq[tuple[l, r: Node, p: int]]
+
+  for (p, o) in path(t, at):
+    # Split point nodes
+    let
+      l = new(Node)
+      r = new(Node)
+    # Don't need to split any element in half
+    if o < 0:
+      for i in 0 ..< p:
+        l.add(n.elements[i], i)
+      for i in p ..< n.entries:
+        r.add(n.elements[i], i - p)
+      # Add all children except those at split point
+      for i in 0 ..< p:
+        l.add(n.children[i], i)
+      for i in p + 1 .. n.entries:
+        r.add(n.children[i], i - (p + 1) + 1)
+    # Need to split an element in half
+    else:
+      for i in 0 ..< p:
+        l.add(n.elements[i], i)
+      l.add(newLitElem(n.elements[p].bytes, 0'i64, o), p)
+      for i in p + 1 ..< n.entries:
+        r.add(n.elements[i], i - p)
+      r.add(newLitElem(n.elements[p].bytes, o + 1, n.elements[p].length-1), 0)
+      # Add all children except those at split point
+      for i in 0 .. p:
+        l.add(n.children[i], i)
+      for i in p + 1 .. n.entries:
+        r.add(n.children[i], i - p + 1)
+    # Save split point nodes
+    levels.add((l, r, p))
+    # Descent though split point
+    n = n.children[p]
+
+  # Add split point children
+  for i in 0 ..< levels.len - 1:
+    levels[i].l.add(levels[i+1].l, levels[i].l.entries)
+    levels[i].r.add(levels[i+1].r, 0)
+
+  return (Tree(root: levels[0].l), Tree(root: levels[0].r))
+
 ### TESTING AREA ###
 proc newLitElem(s: varargs[int]): Element =
   result = Element(kind: ekLiteral)
@@ -147,27 +231,6 @@ proc add(e: Element, what: seq[int], where: int) =
   for i, b in what:
     e.bytes[where + i] = b.byte
   e.length = e.length + what.len
-
-proc add(n: Node, elements: varargs[Element]) =
-  for i, e in elements:
-    n.elements[n.entries + i] = e
-    n.byteCnt = n.byteCnt + e.length
-    var curr = n.father
-    while curr != nil:
-      curr.byteCnt = curr.byteCnt + e.length
-      curr = curr.father
-  inc(n.entries, elements.len)
-
-proc add(root: Node, what: Node, where: int) =
-  if root.children[where] != nil:
-    quit("Tried to add Node to non-nil link")
-  what.father = root
-  root.children[where] = what
-  inc(root.entries)
-  var curr = what
-  while curr.father != nil:
-    curr.father.byteCnt =  curr.father.byteCnt + curr.byteCnt
-    curr = curr.father
 
 when isMainModule:
   let
@@ -226,12 +289,47 @@ when isMainModule:
   n11.add(n09, 0)
   n08.add(n11, 2)
 
-  echo "--- get() ---"
-  for i in 0 .. 31:
-    echo n04[i]
+  let x = Tree(root: n04)
+
+  echo "=== get() ==="
+  block:
+    var i: int
+    while true:
+      try:
+        echo x[i]
+      except IndexError:
+        break
+      inc(i)
 
   echo "\n"
 
-  echo "--- path() ---"
-  for brk in path(n04, 15'i64):
-    echo brk
+  block:
+    var j: int
+    while true:
+      echo &"=== split({j}) ==="
+      try:
+        echo "--- path() ---"
+        for brk in path(x, j):
+          echo brk
+        let (l, r) = split(x, j)
+        echo "--- left ---"
+        block:
+          var i: int
+          while true:
+            try:
+              echo l[i]
+            except IndexError:
+              break
+            inc(i)
+        echo "--- right ---"
+        block:
+          var i: int
+          while true:
+            try:
+              echo r[i]
+            except IndexError:
+              break
+            inc(i)
+        inc(j)
+      except IndexError:
+        break
