@@ -10,6 +10,7 @@ type
   Node = ref object
     refCnt: int
     byteCnt: int64
+    depth: int
     entries: int
     elements: array[M, Element]
     father: Node
@@ -62,6 +63,8 @@ proc add(root: Node, what: Node, where: int) =
   var curr = what
   while curr.father != nil:
     curr.father.byteCnt =  curr.father.byteCnt + curr.byteCnt
+    if curr.father.depth <= curr.depth:
+      curr.father.depth = curr.depth + 1
     curr = curr.father
 
 proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
@@ -122,6 +125,9 @@ proc `[]=`*(t: Tree, i: int64, v: byte) =
 
 proc len*(t: Tree): int64 =
   t.root.byteCnt
+
+proc height*(t: Tree): int =
+  t.root.depth
 
 proc ioblock(f: File, o: int64): Element =
   Element(length: f.getFileSize, kind: ekIoblock, file: f, offset: o)
@@ -219,6 +225,9 @@ proc split(t: Tree, at: int64): tuple[l, r: Tree] =
     levels[i].r.add(levels[i+1].r, 0)
 
   return (Tree(root: levels[0].l), Tree(root: levels[0].r))
+
+#proc join(l, r: Tree): Tree =
+
 
 ### TESTING AREA ###
 proc newLitElem(s: varargs[int]): Element =
@@ -333,3 +342,7 @@ when isMainModule:
         inc(j)
       except IndexError:
         break
+
+  echo "=== height() ==="
+  block:
+    echo height(x)
