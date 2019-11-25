@@ -9,7 +9,7 @@ This means **hexalepis** also aims for:
     - Various radices
     - Highlighting
     - Parameterizable search
-    - [Kaitai Struct](https://kaitai.io/) integration
+    - [`.ksy`](http://doc.kaitai.io/ksy_reference.html) integration
     - Configurable key bindings
     - (...)
 * User interface (TUI and GUI)
