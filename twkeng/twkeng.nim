@@ -67,7 +67,7 @@ proc add(root: Node, what: Node, where: int) =
       curr.father.depth = curr.depth + 1
     curr = curr.father
 
-proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
+proc get(n: Node, i: int64): tuple[n: Node, p: int, offset: int64] =
   var
     n = n
     i = i
@@ -77,7 +77,7 @@ proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
     of true:
       for e in 0 ..< n.entries:
         if i < n.elements[e].length:
-          return (n.elements[e], i)
+          return (n, e, i)
         else:
           i = i - n.elements[e].length
     of false:
@@ -93,14 +93,16 @@ proc get(n: Node, i: int64): tuple[p: Element, offset: int64] =
             raise newException(IndexError, "index out of bounce")
           # found it
           elif i < lcount + n.elements[currElement].length:
-            return (n.elements[currElement], i - lcount)
+            return (n, currElement, i - lcount)
           # progress
           else:
             i = i - lcount - n.elements[currElement].length
             inc(currElement)
 
 proc `[]`(n: Node, i: int64): byte =
-  var (e, o) = get(n, i)
+  let
+    (n, p, o) = get(n, i)
+    e = n.elements[p]
   case e.kind
   of ekLiteral:
     e.bytes[o]
@@ -109,10 +111,15 @@ proc `[]`(n: Node, i: int64): byte =
     readChar(e.file).byte
 
 proc `[]=`(n: Node, i: int64, v: byte) =
-  var (e, o) = get(n, i)
+  let
+    (n, p, o) = get(n, i)
+    e = n.elements[p]
   case e.kind
   of ekLiteral:
-    e.bytes[o] = v
+    if n.byteCnt != 1:
+      discard
+    else:
+      e.bytes[o] = v
   of ekIoblock:
     discard
     # Don't wanna touch the file here, should clone()
@@ -226,8 +233,24 @@ proc split(t: Tree, at: int64): tuple[l, r: Tree] =
 
   return (Tree(root: levels[0].l), Tree(root: levels[0].r))
 
-#proc join(l, r: Tree): Tree =
+#[
+proc join(l, r: Tree): Tree =
+  var
+    lr = l.root
+    rr = r.root
+    heightDiff = height(l) - height(r)
 
+  case heightDiff
+  # Left tree is shorter
+  of int.low .. -1:
+    for 0 .. -heightDiff:
+      rr = rr.
+  # Same height
+  of 0:
+  # Left tree is taller
+  of 1 .. int.high:
+    for 0 .. heightDiff:
+]#
 
 ### TESTING AREA ###
 proc newLitElem(s: varargs[int]): Element =
