@@ -35,3 +35,5 @@ proc runTui*() =
 
   if file != nil:
     close(file)
+
+runTui()

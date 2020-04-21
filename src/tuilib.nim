@@ -1,5 +1,5 @@
 import
-  vt100, macros, os, termios, deques, strutils, strformat, ../twkeng/twkeng
+  vt100, macros, os, termios, deques, strutils, strformat, engine
 from terminal import terminalHeight, terminalWidth
 
 type

@@ -1,3 +1,0 @@
-import tui/tui
-
-runTui()

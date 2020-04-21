@@ -2,25 +2,7 @@
 ## Hex editor made efficient
 
 ### Introduction
-Hex editors need special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a *real project*.
-
-This means **hexalepis** also aims for:
-* Featurefulness
-    - Various radices
-    - Highlighting
-    - Parameterizable search
-    - [`.ksy`](http://doc.kaitai.io/ksy_reference.html) integration
-    - Configurable key bindings
-    - (...)
-* User interface (TUI and GUI)
-    - Responsive
-    - Intuitive
-    - Modern
-* Platform
-    - Linux
-    - MacOS
-    - Windows
-    - Browsers
+Hex editors need special optimizations (different from text editors) which are typically not implemented. This project was inspired by Simon Tatham's [article](https://www.chiark.greenend.org.uk/~sgtatham/tweak/btree.html) and is an effort to apply his ideas into a minimal but practical editor.
 
 ### Time efficiency
 | Operation | Complexity |
@@ -50,7 +32,6 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 
 ### Main goals
 - [ ] Implement Simon Tatham's engine
-- [ ] Make a [nimx](https://github.com/yglukhov/nimx) GUI edition
 - [ ] [Kaitai Struct](https://kaitai.io/) support
 
 ### TUI goals
@@ -84,5 +65,3 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 | +, = | adjust width |
 | tab | change panel |
 | m (in hex panel) | mark byte |
-
-**Note:** Since the new engine was integrated into the TUI, some of the key bindings above will not work because the functionality is not implemented yet.
