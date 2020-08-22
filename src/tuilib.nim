@@ -319,7 +319,7 @@ proc render*(t: Tui) =
   if t.panel == panelHex: s &= "|" else: s &= " "
   s &= attrCode(bold, fgYellow)
   for i in 0 ..< t.scrnCols:
-    s &= toHex((i + t.rot) mod t.scrnCols, 2) & " "
+    s &= toHex((i + t.hScroll) mod t.scrnCols, 2) & " "
   s &= "\b"
   s &= attrCode(resetAll)
   if t.panel == panelHex: s &= "|  "
