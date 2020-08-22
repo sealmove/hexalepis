@@ -62,6 +62,5 @@ Copy-paste is not an insertion operation! This means pasting the same block in m
 | end | go to end of line |
 | pageup, pagedown  | vertical scroll |
 | [ ] | horizontal scroll |
-| +, = | adjust width |
 | tab | change panel |
 | m (in hex panel) | mark byte |
