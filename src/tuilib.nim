@@ -13,6 +13,7 @@ type
     rowOff: int
     colOff: int
     bytesInLastRow: int
+    hScroll: int
     userWidth: int
     widthMaxFit: int
     panel: Panel
@@ -100,7 +101,7 @@ proc toAscii(b: byte): string =
   of bkNull: "0"
   of bkWhiteSpace: "_"
   of bkPrintable: $b.char
-  else: "x"
+  else: "."
 
   # Termios utilities
 const EAGAIN = 11.OSErrorCode
@@ -220,18 +221,6 @@ proc verticalScroll(t: Tui, key: int) =
       inc(t.rowOff, t.scrnRows)
   else: discard
 
-proc adjustWidth(t: Tui, key: int) =
-  case key
-  of '-'.int:
-    if t.scrnCols > 1:
-      dec(t.scrnCols)
-      t.userWidth = t.scrnCols
-  of '='.int:
-    if t.scrnCols < t.widthMaxFit:
-      inc(t.scrnCols)
-      t.userWidth = t.scrnCols
-  else: discard
-
 proc horizontalScroll(t: Tui, key: int) =
   proc incBytesInLastRow() =
     if t.bytesInLastRow < 16: inc(t.bytesInLastRow) else: t.bytesInLastRow = 1
@@ -244,18 +233,22 @@ proc horizontalScroll(t: Tui, key: int) =
     if t.colOff != 0:
       dec(t.colOff)
       incBytesInLastRow()
+      dec t.hScroll
     elif t.rowOff != 0:
       dec(t.rowOff)
       t.colOff = 15
       incBytesInLastRow()
+      dec t.hScroll
   of ']'.int:
     if t.colOff != 15:
       inc(t.colOff)
       decBytesInLastRow()
+      inc t.hScroll
     elif t.rowOff != t.rows:
       inc(t.rowOff)
       t.colOff = 0
       decBytesInLastRow()
+      inc t.hScroll
   else: discard
 
 proc save(t: Tui) =
@@ -299,6 +292,7 @@ proc initialize*(t: Tui) =
   stdout.write hideCursorCode
   t.rows = t.data.len.int div t.scrnCols
   t.bytesInLastRow = t.data.len.int mod t.scrnCols
+  t.hScroll = 0
   if t.bytesInLastRow != 0:
     inc(t.rows)
   else:
@@ -319,13 +313,13 @@ proc render*(t: Tui) =
   s &= cursorPosCode(0, 0)
   s &= attrCode(fgYellow, bold, underline)
   let hoverOff = t.scrnCols * (t.rowOff + t.scrnRowOff) + t.colOff
-  s &= toHex(hoverOff + t.scrnColOff, 8)
+  s &= toHex(hoverOff + t.scrnColOff, 8).toLower
   s &= attrCode(resetAll)
   s &= "  "
   if t.panel == panelHex: s &= "|" else: s &= " "
   s &= attrCode(bold, fgYellow)
   for i in 0 ..< t.scrnCols:
-    s &= i.toHex(2) & " "
+    s &= toHex((i + t.rot) mod t.scrnCols, 2) & " "
   s &= "\b"
   s &= attrCode(resetAll)
   if t.panel == panelHex: s &= "|  "
@@ -408,8 +402,7 @@ proc render*(t: Tui) =
       s &= "~"
     if row < t.scrnRows - 1:
       s &= "\r\n"
-  s &= "\r\n"  #& attrCode(bgDarkGray)
-  #for _ in 0 .. t.leftMargin + t.scrnCols + 17: s &= " "
+  s &= "\r\n"
   s &= attrCode(bgDefault)
   s &= cursorPosCode(t.leftMargin + 3 * t.scrnColOff,
   t.upperMargin + t.scrnRowOff)
@@ -479,8 +472,6 @@ proc processKeypress*(t: Tui, c: int) =
         t.moveCursor(c)
       elif c == 'u'.int:
         t.undo()
-      elif c == '-'.int or c == '='.int:
-        t.adjustWidth(c)
       elif c == '['.int or c == ']'.int:
         t.horizontalScroll(c)
       elif c == 'm':
